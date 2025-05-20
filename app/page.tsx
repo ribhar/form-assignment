@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 export default function FormPage() {
   const router = useRouter();
@@ -18,7 +18,8 @@ export default function FormPage() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    const ageNum = parseInt(formData.age);
+    const ageNum = parseInt(formData.age, 10);
+
     if (!formData.fullName.trim()) errs.fullName = "Full Name is required.";
     if (!formData.email.trim()) {
       errs.email = "Email is required.";
@@ -26,25 +27,31 @@ export default function FormPage() {
       errs.email = "Invalid email.";
     }
     if (!formData.age || isNaN(ageNum) || ageNum < 10 || ageNum > 100) {
-      errs.age = "Age must be 10–100.";
+      errs.age = "Age must be between 10 and 100.";
     }
     if (!formData.gender) errs.gender = "Please select a gender.";
 
     setErrors(errs);
-    if (Object.keys(errs).length) toast.error("Please fix the errors.");
-    return !Object.keys(errs).length;
+    if (Object.keys(errs).length > 0) {
+      toast.error("Please fix the errors.");
+    }
+
+    return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
     toast.success("Form submitted!");
-    const params = new URLSearchParams(formData as any).toString();
+    const params = new URLSearchParams(formData as Record<string, string>).toString();
     setTimeout(() => router.push(`/success?${params}`), 1200);
   };
 
-  const handleChange = (e: React.ChangeEvent<any>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleReset = () => {
@@ -53,28 +60,31 @@ export default function FormPage() {
     toast.info("Form reset.");
   };
 
+  const fields: { label: string; name: keyof typeof formData; type: string }[] = [
+    { label: "Full Name", name: "fullName", type: "text" },
+    { label: "Email", name: "email", type: "email" },
+    { label: "Age", name: "age", type: "number" },
+  ];
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-white px-4">
-      <form 
+      <form
         onSubmit={handleSubmit}
         className="w-full max-w-lg bg-white p-8 rounded-2xl shadow-xl ring-1 ring-gray-200 space-y-6"
+        noValidate
       >
         <h1 className="text-3xl font-bold text-indigo-700 text-center">Feedback Form</h1>
 
-        {/** FIELD HELPER **/}
-        {[
-          { label: "Full Name", name: "fullName", type: "text" },
-          { label: "Email", name: "email", type: "email" },
-          { label: "Age", name: "age", type: "number" },
-        ].map(({ label, name, type }) => (
+        {fields.map(({ label, name, type }) => (
           <div key={name}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">
               {label}
             </label>
             <input
+              id={name}
               name={name}
               type={type}
-              value={(formData as any)[name]}
+              value={formData[name]}
               onChange={handleChange}
               className={`
                 block w-full px-4 py-2 border
@@ -89,12 +99,12 @@ export default function FormPage() {
           </div>
         ))}
 
-        {/** GENDER **/}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
             Gender
           </label>
           <select
+            id="gender"
             name="gender"
             value={formData.gender}
             onChange={handleChange}
@@ -106,21 +116,21 @@ export default function FormPage() {
             `}
           >
             <option value="">-- Select --</option>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Other</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
           </select>
           {errors.gender && (
             <p className="mt-1 text-xs text-red-500">{errors.gender}</p>
           )}
         </div>
 
-        {/** COMMENTS **/}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="comments" className="block text-sm font-medium text-gray-700 mb-1">
             Comments
           </label>
           <textarea
+            id="comments"
             name="comments"
             value={formData.comments}
             onChange={handleChange}
@@ -129,7 +139,6 @@ export default function FormPage() {
           />
         </div>
 
-        {/** BUTTONS **/}
         <div className="flex gap-4 justify-end">
           <button
             type="button"
