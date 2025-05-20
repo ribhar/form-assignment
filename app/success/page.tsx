@@ -4,13 +4,12 @@ import { useSearchParams } from "next/navigation";
 import { useRouter }       from "next/navigation";
 import { useEffect }       from "react";
 import { toast }           from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 export default function SuccessPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const router       = useRouter();
 
-  // show toast when page loads
   useEffect(() => {
     toast.success("Form submitted successfully!");
   }, []);
@@ -29,21 +28,11 @@ export default function SuccessPage() {
         </h1>
 
         <div className="bg-gray-100 p-6 rounded-xl space-y-3">
-          <p>
-            <span className="font-medium">Full Name:</span> {fullName}
-          </p>
-          <p>
-            <span className="font-medium">Email:</span> {email}
-          </p>
-          <p>
-            <span className="font-medium">Age:</span> {age}
-          </p>
-          <p>
-            <span className="font-medium">Gender:</span> {gender}
-          </p>
-          <p>
-            <span className="font-medium">Comments:</span> {comments || "N/A"}
-          </p>
+          <p><strong>Full Name:</strong> {fullName}</p>
+          <p><strong>Email:</strong> {email}</p>
+          <p><strong>Age:</strong> {age}</p>
+          <p><strong>Gender:</strong> {gender}</p>
+          <p><strong>Comments:</strong> {comments || "N/A"}</p>
         </div>
 
         <button
